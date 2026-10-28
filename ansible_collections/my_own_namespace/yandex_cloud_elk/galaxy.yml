@@ -1,0 +1,24 @@
+namespace: my_own_namespace
+name: yandex_cloud_elk
+version: 1.0.0
+readme: README.md
+authors:
+  - Roman Nikiforov
+description: Collection for Observability stack deployment on Yandex Cloud
+license:
+  - MIT
+tags:
+  - yandex
+  - cloud
+  - observability
+dependencies: {}
+repository: https://github.com/RomanNikiforovSergeevich/my_own_collection
+build_ignore:
+  - "**/.git"
+  - "**/.venv"
+  - "**/.tox"
+  - "**/molecule"
+  - "**/tests"
+  - "*.tar.gz"
+  - "*.pyc"
+  - "__pycache__"

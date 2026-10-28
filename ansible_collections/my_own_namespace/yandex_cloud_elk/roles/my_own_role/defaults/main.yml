@@ -1,0 +1,3 @@
+---
+my_own_role_path: /tmp/default_file.txt
+my_own_role_content: "Default content from role"

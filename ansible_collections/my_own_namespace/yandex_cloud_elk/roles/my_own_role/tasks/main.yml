@@ -1,0 +1,10 @@
+---
+- name: Create file using my_own_module
+  my_own_namespace.yandex_cloud_elk.my_own_module:
+    path: "{{ my_own_role_path }}"
+    content: "{{ my_own_role_content }}"
+  register: my_own_role_result
+
+- name: Show result
+  ansible.builtin.debug:
+    var: my_own_role_result

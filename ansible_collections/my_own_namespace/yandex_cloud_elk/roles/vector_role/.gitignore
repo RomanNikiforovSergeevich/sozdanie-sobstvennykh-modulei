@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Molecule
+.molecule/
+molecule/*/ephemeral/
+
+# Tox
+.tox/
+
+.podman/
+
+# Ansible
+*.retry
+.ansible/
+ansible.cfg
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+
+# Logs & temporary files
+*.log

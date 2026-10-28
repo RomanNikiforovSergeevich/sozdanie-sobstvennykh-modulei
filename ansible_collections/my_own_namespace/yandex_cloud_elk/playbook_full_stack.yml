@@ -1,0 +1,107 @@
+---
+# Шаг 1: Создаём ВМ в Yandex Cloud
+- name: Create Observability infrastructure
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    cloud_id: "{{ lookup('env', 'YC_CLOUD_ID') }}"
+    folder_id: "{{ lookup('env', 'YC_FOLDER_ID') }}"
+    yc_token: "{{ lookup('env', 'YC_TOKEN') }}"
+    subnet_id: "{{ lookup('env', 'YC_SUBNET_ID') }}"
+    ssh_public_key: "{{ lookup('file', lookup('env', 'HOME') + '/.ssh/ssh-key-1771586047288.pub') }}"
+
+  tasks:
+    - name: Create ClickHouse VM
+      my_own_namespace.yandex_cloud_elk.yc_instance:
+        name: "obs-clickhouse"
+        folder_id: "{{ folder_id }}"
+        subnet_id: "{{ subnet_id }}"
+        cores: 2
+        memory: 1
+        core_fraction: 20
+        image_family: ubuntu-2204-lts
+        disk_size: 10
+        ssh_public_key: "{{ ssh_public_key }}"
+        state: present
+      register: ch_vm
+
+    - name: Create Vector VM
+      my_own_namespace.yandex_cloud_elk.yc_instance:
+        name: "obs-vector"
+        folder_id: "{{ folder_id }}"
+        subnet_id: "{{ subnet_id }}"
+        cores: 2
+        memory: 1
+        core_fraction: 20
+        image_family: ubuntu-2204-lts
+        disk_size: 10
+        ssh_public_key: "{{ ssh_public_key }}"
+        state: present
+      register: vec_vm
+
+    - name: Create Lighthouse VM
+      my_own_namespace.yandex_cloud_elk.yc_instance:
+        name: "obs-lighthouse"
+        folder_id: "{{ folder_id }}"
+        subnet_id: "{{ subnet_id }}"
+        cores: 2
+        memory: 1
+        core_fraction: 20
+        image_family: ubuntu-2204-lts
+        disk_size: 10
+        ssh_public_key: "{{ ssh_public_key }}"
+        state: present
+      register: lh_vm
+
+    - name: Register ClickHouse in inventory
+      ansible.builtin.add_host:
+        name: "clickhouse-host"
+        groups: clickhouse
+        ansible_host: "{{ ch_vm.external_ip }}"
+        ansible_user: ubuntu
+
+    - name: Register Vector in inventory
+      ansible.builtin.add_host:
+        name: "vector-host"
+        groups: vector
+        ansible_host: "{{ vec_vm.external_ip }}"
+        ansible_user: ubuntu
+
+    - name: Register Lighthouse in inventory
+      ansible.builtin.add_host:
+        name: "lighthouse-host"
+        groups: lighthouse
+        ansible_host: "{{ lh_vm.external_ip }}"
+        ansible_user: ubuntu
+
+    - name: Wait for SSH on all VMs
+      ansible.builtin.wait_for:
+        host: "{{ item }}"
+        port: 22
+        delay: 5
+        timeout: 600
+      loop:
+        - "{{ ch_vm.external_ip }}"
+        - "{{ vec_vm.external_ip }}"
+        - "{{ lh_vm.external_ip }}"
+      delegate_to: localhost
+
+# Шаг 2: Устанавливаем стек на созданные ВМ
+- name: Install ClickHouse
+  hosts: clickhouse
+  become: true
+  roles:
+    - clickhouse
+
+- name: Install Vector
+  hosts: vector
+  become: true
+  roles:
+    - vector_role
+
+- name: Install Lighthouse
+  hosts: lighthouse
+  become: true
+  roles:
+    - lighthouse_role

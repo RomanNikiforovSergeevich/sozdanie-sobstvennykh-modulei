@@ -1,0 +1,15 @@
+galaxy_info:
+  role_name: vector_role
+  namespace: romannikiforovsergeevich
+  author: Roman Nikiforov
+  description: Ansible role for installing and configuring Vector
+  license: MIT
+  min_ansible_version: "2.9"
+  platforms:
+    - name: Ubuntu
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+  galaxy_tags: []

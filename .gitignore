@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Molecule
+.molecule/
+molecule/*/ephemeral/
+
+# Tox
+.tox/
+
+.podman/
+
+# Ansible
+*.retry
+.ansible/
+ansible.cfg
+ansible
+
+# IDE & OS
+.idea/
+.vscode/
+.DS_Store
+
+# Logs & temporary files
+*.log
+
+ansible/
+ansible_collections/*/yandex_cloud_elk/venv/
+test_collection/
+*.tar.gz
+!README.md

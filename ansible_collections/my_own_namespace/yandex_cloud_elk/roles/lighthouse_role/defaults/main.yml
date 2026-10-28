@@ -1,0 +1,4 @@
+---
+lighthouse_url: "https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip"
+lighthouse_web_root: "/var/www"
+lighthouse_symlink_path: "/var/www/lighthouse"

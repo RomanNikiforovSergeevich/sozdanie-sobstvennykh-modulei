@@ -1,0 +1,85 @@
+---
+- name: Update apt cache (Debian)
+  ansible.builtin.apt:
+    update_cache: true
+  when: ansible_os_family == "Debian"
+
+- name: Install Nginx and unzip (Debian)
+  ansible.builtin.apt:
+    name:
+      - nginx
+      - unzip
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install Nginx and unzip (RedHat)
+  ansible.builtin.dnf:
+    name:
+      - nginx
+      - unzip
+    state: present
+  when: ansible_os_family == "RedHat"
+
+- name: Ensure web root directory exists
+  ansible.builtin.file:
+    path: "{{ lighthouse_web_root | default('/var/www') }}"
+    state: directory
+    mode: '0755'
+
+- name: Download and unpack Lighthouse
+  ansible.builtin.unarchive:
+    src: "{{ lighthouse_url | default('https://github.com/VKCOM/lighthouse/archive/refs/heads/master.zip') }}"
+    dest: "{{ lighthouse_web_root | default('/var/www') }}"
+    remote_src: true
+    creates: "{{ lighthouse_web_root | default('/var/www') }}/lighthouse-master"
+
+- name: Create symlink for nginx root
+  ansible.builtin.file:
+    src: "{{ lighthouse_web_root | default('/var/www') }}/lighthouse-master"
+    dest: "{{ lighthouse_symlink_path | default('/var/www/lighthouse') }}"
+    state: link
+
+- name: Configure Nginx for Lighthouse (Debian)
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/lighthouse
+    mode: "0644"
+  when: ansible_os_family == "Debian"
+  notify: Restart Nginx
+
+- name: Enable Lighthouse site (Debian)
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/lighthouse
+    dest: /etc/nginx/sites-enabled/lighthouse
+    state: link
+  when: ansible_os_family == "Debian"
+  notify: Restart Nginx
+
+- name: Remove default Nginx site (Debian)
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  when: ansible_os_family == "Debian"
+  notify: Restart Nginx
+
+- name: Configure Nginx for Lighthouse (RedHat)
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/conf.d/lighthouse.conf
+    mode: "0644"
+  when: ansible_os_family == "RedHat"
+  notify: Restart Nginx
+
+- name: Remove default server block from nginx.conf (RedHat)
+  ansible.builtin.replace:
+    path: /etc/nginx/nginx.conf
+    regexp: '(?s)server\s*\{[^}]*listen\s+80\s+default_server;[^}]*\}'
+    replace: ''
+  when: ansible_os_family == "RedHat"
+  notify: Restart Nginx
+
+- name: Ensure Nginx is running
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true

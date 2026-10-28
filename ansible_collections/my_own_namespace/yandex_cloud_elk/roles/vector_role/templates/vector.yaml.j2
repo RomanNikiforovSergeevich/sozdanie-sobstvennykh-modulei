@@ -1,0 +1,11 @@
+data_dir: {{ vector_data_dir }}
+sources:
+  demo_logs:
+    type: demo_logs
+    format: json
+sinks:
+  stdout:
+    type: console
+    inputs: ["demo_logs"]
+    encoding:
+      codec: json
